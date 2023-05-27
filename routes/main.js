@@ -1,7 +1,8 @@
 import express from 'express';
 import jwt from "jsonwebtoken";
 import * as dotenv from "dotenv";
-import { users } from './db/users.js';
+import { users } from '../db/users.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 
 dotenv.config();
 
@@ -14,7 +15,7 @@ mainRouter
 	res.send("Witaj na stronie głównej");
 })
 
-.get("/admin", (req, res) => {
+.get("/admin", authMiddleware, (req, res) => {
 	res.send("Witaj w panelu admina");
 })
 

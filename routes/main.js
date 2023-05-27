@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import * as dotenv from "dotenv";
 import { users } from '../db/users.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
+import { refreshTokens } from '../db/refreshTokens.js';
 
 dotenv.config();
 
@@ -29,8 +30,30 @@ mainRouter
 	}
 
 	const payload = user;
-	const token = jwt.sign(payload, process.env.ACCESS_TOKEN);
+	const token = jwt.sign(payload, process.env.ACCESS_TOKEN, {expiresIn: '15s'});
+	const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN);
+    refreshTokens.push(refreshToken);
 
-	res.json({ token });
+	res.json({ token, refreshToken });
+})
+
+.post('/refresh-token', (req, res) => {
+    const {token} = req.body;
+    if(!refreshTokens.includes(token)) {
+        return res.status(403).json({ isSuccess: false, message: 'nieprawidłowy refreshToken' });
+    }
+
+    jwt.verify(token, process.env.REFRESH_TOKEN, (err, data) => {
+        if(err) {
+            return res.status(403).json({ isSuccess: false, message: 'refreshToken nie przechodzi weryfikacji' });
+        }
+
+        const payload = { // nie podajemy tutaj wszystkich danych 
+            email: data.email,
+            name: data.name,
+        };
+        const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN, {expiresIn: '15s'});
+        res.json({newAccessToken: accessToken,});
+    });
 })
 

@@ -2,6 +2,13 @@ import express from 'express';
 
 const app = express();
 
+//database mockup 
+const users = [
+    {id: 1, name: 'John', email: 'john@example.com'},
+    {id: 2, name: 'Chris', email: 'chris123@example.com'},
+];
+
+
 app.get('/', (req, res) => {
     res.send('Witaj na stronie głównej');
 });

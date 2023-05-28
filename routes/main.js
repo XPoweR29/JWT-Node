@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import * as dotenv from "dotenv";
 import { users } from '../db/users.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
-import { refreshTokens } from '../db/refreshTokens.js';
+import { refreshTokens, removeRefreshToken } from '../db/refreshTokens.js';
 
 dotenv.config();
 
@@ -16,7 +16,7 @@ mainRouter
 	res.send("Witaj na stronie głównej");
 })
 
-.get("/admin", authMiddleware, (req, res) => {
+.get("/admin", authMiddleware, (req, res) => { 
 	res.send("Witaj w panelu admina");
 })
 
@@ -55,5 +55,12 @@ mainRouter
         const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN, {expiresIn: '15s'});
         res.json({newAccessToken: accessToken,});
     });
+})
+
+.patch('/logout', (req, res) => {
+    const {refreshToken} = req.body;
+    removeRefreshToken(refreshToken); 
+    
+    return res.json({isSuccess: true});
 })
 
